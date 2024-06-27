@@ -37,9 +37,21 @@ csp = {
         'https://code.jquery.com',
         'https://cdn.jsdelivr.net',
         '\'unsafe-inline\''
+    ],
+    'style-src': [
+        '\'self\'',
+        'https://stackpath.bootstrapcdn.com',
+        'https://code.jquery.com',
+        'https://cdn.jsdelivr.net',
+        '\'unsafe-inline\''
+    ],
+    'img-src': [
+        '\'self\'',
+        'https://crests.football-data.org'
     ]
 }
 talisman = Talisman(app, content_security_policy=csp)
+
 
 # Setup Flask-Caching
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
@@ -139,7 +151,7 @@ def matches():
     if form.validate_on_submit():
         league_code = form.league.data
         app.logger.debug(f"League code selected: {league_code}")
-        url = f'https://api.football-data.org/v2/competitions/{league_code}/matches'
+        url = f'https://api.football-data.org/v4/competitions/{league_code}/matches'
         headers = {
             'X-Auth-Token': API_KEY
         }
@@ -181,11 +193,10 @@ def matches():
     return render_template('index.html', form=form, favorites=load_favorites())
 
 
-@cache.cached(timeout=300)
 @app.route('/team/<int:team_id>')
 def team_details(team_id):
     app.logger.debug(f"Team details accessed for team ID: {team_id}")
-    url = f'https://api.football-data.org/v2/teams/{team_id}'
+    url = f'https://api.football-data.org/v4/teams/{team_id}'
     headers = {
         'X-Auth-Token': API_KEY
     }
@@ -195,6 +206,7 @@ def team_details(team_id):
     try:
         response = get_with_retries(url, headers)
         team_info = response.json()
+        app.logger.debug(f"Team info retrieved: {team_info}")
     except Exception as e:
         error = str(e)
         app.logger.error(f"Error retrieving team details: {error}")

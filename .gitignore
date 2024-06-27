@@ -1,0 +1,15 @@
+# Virtual environment
+venv/
+.env
+
+# Python specific
+*.pyc
+__pycache__/
+
+# Logs
+logs/
+*.log
+
+# Flask specific
+instance/
+.cache

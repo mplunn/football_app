@@ -1,62 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Matches</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Football Matches</h1>
-        <form action="/matches" method="post" class="mt-4">
-            <!-- CSRF token removed -->
-            <!-- {{ form.hidden_tag() }} -->
-            <div class="form-group">
-                {{ form.league.label(class="form-label") }}
-                {{ form.league(class="form-control") }}
-            </div>
-            <button type="submit" class="btn btn-primary">Get Matches</button>
-        </form>
-        {% if error %}
-        <div class="alert alert-danger mt-4">
-            <p>{{ error }}</p>
-        </div>
-        {% endif %}
-        {% if matches %}
-        <div class="matches-info mt-4">
-            <h2>Matches</h2>
-            <ul class="list-group">
-                {% for match in matches %}
-                <li class="list-group-item">
-                    <strong><a href="{{ url_for('team_details', team_id=match.homeTeamId) }}">{{ match.homeTeam }}</a> vs <a href="{{ url_for('team_details', team_id=match.awayTeamId) }}">{{ match.awayTeam }}</a></strong> - {{ match.utcDate }}
-                    <p>Venue: {{ match.venue }}</p>
-                    <p>Status: {{ match.status }}</p>
-                    {% if match.status == 'FINISHED' %}
-                    <p>Score: {{ match.score.fullTime.homeTeam }} - {{ match.score.fullTime.awayTeam }}</p>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if favorites %}
-        <div class="favorites-info mt-4">
-            <h2>Favorite Teams</h2>
-            <ul class="list-group">
-                {% for favorite in favorites %}
-                <li class="list-group-item">
-                    <a href="{{ url_for('team_details', team_id=favorite.id) }}">{{ favorite.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4">Search for Leagues</h1>
+<form method="post" action="{{ url_for('matches') }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.league.label(class="form-label") }}
+        {{ form.league(class="form-control") }}
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <div class="form-group">
+        {{ form.gameweek.label(class="form-label") }}
+        {{ form.gameweek(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% if matches %}
+<h2 class="mt-4">Matches</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Home Team</th>
+            <th scope="col">Away Team</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time</th>
+            <th scope="col">Venue</th>
+            <th scope="col">Status</th>
+            <th scope="col">Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for match in matches %}
+        <tr>
+            <td><a href="{{ url_for('team_details', team_id=match.homeTeamId) }}">{{ match.homeTeam }}</a></td>
+            <td><a href="{{ url_for('team_details', team_id=match.awayTeamId) }}">{{ match.awayTeam }}</a></td>
+            <td class="match-date" data-utc="{{ match.utcDate }}"></td>
+            <td class="match-time" data-utc="{{ match.utcDate }}"></td>
+            <td>{{ match.venue }}</td>
+            <td>{{ match.status }}</td>
+            <td>{{ match.score.fullTime.homeTeam }} - {{ match.score.fullTime.awayTeam }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function formatDate(date) {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+    }
+
+    function formatTime(date) {
+        const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+        return date.toLocaleTimeString(undefined, options);
+    }
+
+    document.querySelectorAll('.match-date').forEach(function (element) {
+        const utcDate = new Date(element.getAttribute('data-utc'));
+        element.textContent = formatDate(utcDate);
+    });
+
+    document.querySelectorAll('.match-time').forEach(function (element) {
+        const utcDate = new Date(element.getAttribute('data-utc'));
+        element.textContent = formatTime(utcDate);
+    });
+});
+</script>
+{% endblock %}

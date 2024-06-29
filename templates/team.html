@@ -1,46 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Details</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-</head>
-<body>
-    <div class="container mt-5">
-        {% if team %}
-        <h1 class="text-center">{{ team.name }}</h1>
-        <div class="text-center">
-            <img src="{{ team.crest }}" alt="{{ team.name }} Crest" class="img-fluid team-crest">
-        </div>
-        <p class="text-center"><strong>Short Name:</strong> {{ team.shortName }}</p>
-        <p class="text-center"><strong>Founded:</strong> {{ team.founded }}</p>
-        <p class="text-center"><strong>Venue:</strong> {{ team.venue }}</p>
-        <p class="text-center"><strong>Club Colors:</strong> {{ team.clubColors }}</p>
-
-        <div class="squad-info mt-4">
-            <h2>Squad</h2>
-            <ul class="list-group">
-                {% for player in team.squad %}
-                <li class="list-group-item">
-                    <strong>{{ player.name }}</strong> - {{ player.position }} ({{ player.nationality }})
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% else %}
-        <div class="alert alert-danger">
-            <p>{{ error }}</p>
-        </div>
-        {% endif %}
-        <div class="text-center mt-4">
-            <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
-        </div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4">Team Details</h1>
+{% if team %}
+    <h2>{{ team.name }}</h2>
+    <p><strong>Founded:</strong> {{ team.founded }}</p>
+    <p><strong>Venue:</strong> {{ team.venue }}</p>
+    <h3>Squad</h3>
+    <ul class="list-group">
+        {% for player in team.squad %}
+        <li class="list-group-item">{{ player.name }} - {{ player.position }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% endblock %}

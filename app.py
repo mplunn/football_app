@@ -129,8 +129,11 @@ class LeagueSelectForm(FlaskForm):
         ('SA', 'Serie A'),
         ('BL1', 'Bundesliga'),
         ('FL1', 'Ligue 1'),
-        ('PD', 'La Liga')
+        ('PD', 'La Liga'),
+        ('EC', 'Euro 2024')
     ], validators=[DataRequired()])
+    gameweek = SelectField('Gameweek', choices=[(
+        str(i), f'Gameweek {i}') for i in range(1, 39)], validators=[DataRequired()])
     submit = SubmitField('Get Matches')
 
 
@@ -150,8 +153,10 @@ def matches():
     app.logger.debug(f"Form data received: {request.form}")
     if form.validate_on_submit():
         league_code = form.league.data
-        app.logger.debug(f"League code selected: {league_code}")
-        url = f'https://api.football-data.org/v4/competitions/{league_code}/matches'
+        gameweek = form.gameweek.data
+        app.logger.debug(
+            f"League code selected: {league_code}, Gameweek selected: {gameweek}")
+        url = f'https://api.football-data.org/v4/competitions/{league_code}/matches?matchday={gameweek}'
         headers = {
             'X-Auth-Token': API_KEY
         }
@@ -166,19 +171,19 @@ def matches():
                 matches_info = [
                     {
                         'homeTeam': match['homeTeam']['name'],
+                        'homeTeamId': match['homeTeam']['id'],
                         'awayTeam': match['awayTeam']['name'],
+                        'awayTeamId': match['awayTeam']['id'],
                         'utcDate': match['utcDate'],
                         'venue': match.get('venue', 'N/A'),
                         'status': match['status'],
-                        'score': match['score'],
-                        'homeTeamId': match['homeTeam']['id'],
-                        'awayTeamId': match['awayTeam']['id']
+                        'score': match['score']
                     }
                     for match in data['matches']
                 ]
                 app.logger.debug(f"Found {len(matches_info)} matches")
             else:
-                error = "No matches found for the given league code."
+                error = "No matches found for the given league code and gameweek."
                 app.logger.warning(error)
         except Exception as e:
             error = str(e)
